@@ -1,4 +1,4 @@
-# Digital Life Lab — V1
+# Digital Life Lab — V1 e Milestone 4
 
 Laboratorio desktop offline di Artificial Life: dieci organismi iniziali, un mondo continuo
 2D, reti neurali NumPy, metabolismo, riproduzione asessuata, mutazioni strutturali e
@@ -201,7 +201,76 @@ elaborano gli effetti locali; logger, CLI e renderer sono componenti esterni al 
 L'isolamento è architetturale: non è una sandbox per codice arbitrario o plugin ostili.
 World espone interrogazioni geometriche e trasferimenti energetici, mentre Physics
 applica i comandi: futuri materiali o manipolazioni potranno estendere queste interazioni.
-La V1 non implementa materiali modificabili, strumenti, costruzioni o checkpoint riprendibili.
+Non sono implementati materiali modificabili, strumenti, costruzioni, Neural Inspector o dashboard.
+
+## Checkpoint e ripresa — Milestone 4
+
+La versione 0.2.0 aggiunge archivi **`.dlcp` autosufficienti**: stato numerico completo,
+configurazione, generatori casuali, genomi, plasticità acquisita, genealogia, bilancio,
+risorse, campi e storici dei segnali, più SQLite con il solo esperimento interessato.
+Non serve il database originale. Il formato è versionato, con checksum e array NumPy
+senza pickle. Il nucleo numerico, Python, build NumPy, sistema operativo, architettura,
+capacità CPU e impostazioni numeriche devono essere compatibili. Le differenze LF/CRLF
+delle sorgenti non cambiano la compatibilità.
+
+```toml
+[checkpoint]
+enabled = true              # Salvataggi automatici; manuale e chiusura restano disponibili
+interval_ticks = 10000
+previous_versions = 3        # Almeno tre precedenti oltre alla versione corrente
+```
+
+I file sono sotto `OUTPUT/checkpoints/EXPERIMENT_ID/`. Si salva ogni 10000 tick, mediante
+**Salva .dlcp**, alla chiusura regolare e prima di sostituire l'esperimento corrente.
+Richieste coincidenti sul medesimo stato vengono accorpate. Il salvataggio avviene soltanto
+dopo un tick completo, con temporaneo, controllo CRC, sincronizzazione e pubblicazione
+atomica. I precedenti sono ruotati soltanto dopo una pubblicazione riuscita.
+
+```sh
+uv run python -m digital_ecosystem --headless --resume percorso/salvataggio.dlcp --steps 10000 --output experiments/ripresa
+uv run python -m digital_ecosystem --resume percorso/salvataggio.dlcp
+```
+
+`--steps` indica **tick aggiuntivi**, non il tick finale. Se `--output` è omesso, il database
+operativo viene creato nella directory del checkpoint. La CLI distingue argomenti omessi
+e valori espliciti: `--resume` rifiuta `--seed`, `--config`, i tre flag `--no-*` e
+`--compare-seeds`, anche quando i valori sembrano corrispondere ai default. I parametri
+salvati non vengono sovrascritti. Il caricamento GUI parte sempre in pausa.
+
+Nella GUI, **Recenti** cicla i checkpoint disponibili; il campo percorso è modificabile
+e **Carica** o Invio lo apre. Se un salvataggio fallisce la GUI rimane in pausa, conserva
+il checkpoint precedente e permette di riprovare. Una chiusura regolare fallita viene
+sospesa. Ctrl+C nella CLI richiede l'arresto al confine del tick; un errore interno a un
+tick non produce un checkpoint parziale.
+
+Se il database di destinazione coincide con lo stato archiviato, la ripresa continua
+lo stesso UUID. Se contiene una prosecuzione o dati divergenti, crea una **diramazione**
+con nuovo UUID e prefisso storico importato, preservando i dati della traiettoria originale.
+Il prefisso condiviso non è una replica indipendente. Il lock dell'esperimento impedisce
+due scrittori simultanei e viene rilasciato dal sistema operativo anche dopo arresto forzato.
+Eventi già registrati sono idempotenti per sequenza; payload discordanti vengono rifiutati.
+
+L'esportazione SQLite è selettiva e transazionale: non copia altri esperimenti né genomi
+non referenziati. Il database incorporato usa viste per esporre le tabelle consuete senza
+ripetere l'UUID in ogni riga fisica. Le coordinate dei depositi sono conservate per versione
+geometrica, con energie campionate separate: anche posizioni cambiate durante un esperimento
+vengono ricostruite senza perdita. Le migrazioni del database operativo conservano un
+backup prima di modificare uno schema V1 esistente. I genomi sono archiviati integralmente
+alle nascite e deduplicati; genomi storici mancanti dai vecchi dati non vengono inventati.
+
+Un arresto forzato può perdere i tick successivi all'ultimo checkpoint valido e lasciare
+temporanei `.saving-*`, che non vengono caricati. Checkpoint corrotti o incompatibili sono
+rifiutati prima di modificare la sessione. Non si recupera uno stato numerico dalle sole
+statistiche. La verifica di prestazioni richiede sei esecuzioni sequenziali da 100000 tick,
+confrontando le mediane di tre coppie e un budget del 10%:
+
+```sh
+uv run python tools/benchmark_checkpoints.py --steps 100000 --repeats 3 --extras
+```
+
+Le prove della V1 restano in `docs/VALIDATION.md`; i risultati specifici della Milestone 4
+sono in [docs/M4_VALIDATION.md](docs/M4_VALIDATION.md), con misure complete in
+[docs/m4-performance.json](docs/m4-performance.json).
 
 ## Dati e riproducibilità
 
@@ -215,6 +284,9 @@ effettiva, versione, hash delle sorgenti, versioni software e timestamp UTC.
 | resources | Posizione ed energia di ogni deposito a ciascun campione |
 | events | Tutte le nascite, morti con causa, richieste bloccate da spazio o capacità |
 | individuals | Genitore, linea, generazione, durata, energia acquisita, figli diretti, discendenti totali e firma genetica |
+| genomes / birth_genomes | Snapshot genetici completi compressi, deduplicati e collegati alle nascite |
+| experiment_heads / experiment_origins | Cursori deterministici della cronologia e provenienza delle diramazioni |
+| resource_geometry_history | Posizioni iniziali e modifiche geometriche osservate dei depositi |
 
 La durata della vita degli organismi ancora vivi è **censurata**: `lifespan` resta NULL,
 mentre `observed_age` indica il periodo osservato. I discendenti comprendono tutte le
@@ -230,7 +302,7 @@ Gli organismi non accedono a nessuna di queste metriche.
 
 Le scritture sono raggruppate in transazioni, con salvataggio finale su chiusura o Ctrl+C
 (codice di uscita 130). Un arresto forzato o un guasto del disco può perdere l'ultimo batch;
-non è previsto recupero automatico. Gli eventi sono drenati dal logger a ogni tick.
+la ripresa richiede un checkpoint completo valido. Gli eventi sono drenati dal logger a ogni tick.
 La genealogia rimane in memoria e può crescere in esperimenti con moltissime nascite.
 
 A parità di seed, configurazione, sorgenti e ambiente software, il motore è riproducibile.
@@ -244,9 +316,11 @@ versioni diverse di Python/NumPy, sistemi operativi o architetture.
 configs/                    experimental.toml, diagnostic.toml
 src/digital_ecosystem/      configuration, world, organism, genome, brain,
                             sensors, physics, reproduction, signals, simulation,
-                            renderer, experiment_logger, comparison, __main__
+                            renderer, experiment_logger, comparison, state,
+                            checkpoint, storage, __main__
 tests/                      core, evolution, signals, logging, comparison, CLI/GUI
-tools/                      benchmark.py, capture_gui.py, inspect_results.py
+tools/                      benchmark.py, benchmark_checkpoints.py,
+                            capture_gui.py, inspect_results.py
 docs/                       VALIDATION.md, benchmark.json, gui.png
 pyproject.toml              dipendenze, packaging, pytest, Ruff
 uv.lock                     versioni bloccate
