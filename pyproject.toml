@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "digital-life-lab"
-version = "0.1.0"
+version = "0.2.0"
 description = "An offline, physically selected artificial-life laboratory"
 requires-python = ">=3.12,<3.13"
 dependencies = ["numpy>=2.0,<3", "pygame-ce>=2.5,<3"]

@@ -7,6 +7,7 @@ import json
 import platform
 import sqlite3
 import uuid
+import zlib
 from datetime import UTC, datetime
 from importlib.resources import files
 from pathlib import Path
@@ -14,6 +15,8 @@ from pathlib import Path
 import numpy as np
 
 from . import __version__
+from .state import canonical_json
+from .storage import ExperimentLock, migrate
 
 SAMPLE_COLUMNS = (
     "experiment_id",
@@ -157,6 +160,10 @@ class ExperimentLogger:
         self.last_sample = -1
         self.samples_since_commit = 0
         self._schema()
+        migrate(self.connection, self.database)
+        self.lock = ExperimentLock(self.output, self.experiment_id)
+        self.archived_id = 0
+        self.last_resource_positions = None
         software = {
             "python": platform.python_version(),
             "platform": platform.platform(),
@@ -237,39 +244,103 @@ class ExperimentLogger:
             "FOREIGN KEY(experiment_id) REFERENCES experiments(id))"
         )
 
+    def _write(self, statement, parameters=(), *, many=False):
+        # Retain only the uncommitted observation batch, so a SQLite rollback
+        # (including SQLITE_FULL) cannot silently discard drained engine queues.
+        if not hasattr(self, "_pending_writes"):
+            self._pending_writes = []
+        self._pending_writes.append((statement, parameters, many))
+        try:
+            method = self.connection.executemany if many else self.connection.execute
+            return method(statement, parameters)
+        except sqlite3.Error as error:
+            self.connection.rollback()
+            self._retry_writes = True
+            raise RuntimeError(f"SQLite observation write failed: {error}") from error
+
+    def _recover_writes(self):
+        if not getattr(self, "_retry_writes", False):
+            return
+        try:
+            for statement, parameters, many in self._pending_writes:
+                method = self.connection.executemany if many else self.connection.execute
+                method(statement, parameters)
+        except sqlite3.Error as error:
+            self.connection.rollback()
+            raise RuntimeError(f"SQLite observation retry failed: {error}") from error
+        self._retry_writes = False
+        self.archived_id = self.connection.execute(
+            "SELECT coalesce(max(organism_id),0) FROM birth_genomes WHERE experiment_id=?",
+            (self.experiment_id,),
+        ).fetchone()[0]
+        self.last_sample = self.connection.execute(
+            "SELECT coalesce(max(tick),-1) FROM samples WHERE experiment_id=?",
+            (self.experiment_id,),
+        ).fetchone()[0]
+        rows = self.connection.execute(
+            "SELECT x,y FROM resources WHERE experiment_id=? AND tick=? ORDER BY resource_id",
+            (self.experiment_id, self.last_sample),
+        ).fetchall()
+        self.last_resource_positions = np.asarray(rows, dtype=float).reshape((-1, 2))
+        return True
+
     def observe(self, simulation=None, force=False):
         if self.closed:
             raise RuntimeError("Logger already closed")
         if simulation is not None and simulation is not self.simulation:
             raise ValueError("Logger belongs to a different experiment")
+        recovered = self._recover_writes()
         simulation = self.simulation
-        self.connection.executemany(
-            "INSERT INTO events (experiment_id, tick, kind, organism_id, details_json) "
-            "VALUES (?, ?, ?, ?, ?)",
-            [
-                (
-                    self.experiment_id,
-                    e["tick"],
-                    e["kind"],
-                    e.get("organism_id"),
-                    json.dumps(e, sort_keys=True),
+        if simulation.pending_genomes:
+            for content_id, genome in simulation.pending_genomes.items():
+                self._write(
+                    "INSERT OR IGNORE INTO genomes VALUES (?,?)",
+                    (content_id, zlib.compress(canonical_json(genome), 1)),
                 )
-                for e in simulation.events
-            ],
-        )
+            for identifier, record in simulation.records.items():
+                if identifier > self.archived_id:
+                    self._write(
+                        "INSERT OR IGNORE INTO birth_genomes VALUES (?,?,?)",
+                        (self.experiment_id, identifier, record["genome_id"]),
+                    )
+            self.archived_id = max(simulation.records, default=0)
+            simulation.pending_genomes.clear()
+        self.append_events(simulation.events)
         simulation.events.clear()  # Observation queue only; never read by physical rules.
         if not force and simulation.tick % simulation.config.logging.sample_interval:
             return
-        if simulation.tick == self.last_sample:
+        if simulation.tick == self.last_sample and not recovered:
             return
+        positions = simulation.world.resource_positions
+        changed = (
+            np.ones(len(positions), dtype=bool)
+            if self.last_resource_positions is None
+            else np.any(positions != self.last_resource_positions, axis=1)
+        )
+        self._write(
+            "INSERT OR IGNORE INTO resource_geometry_history VALUES (?,?,?,?,?)",
+            [
+                (
+                    self.experiment_id,
+                    simulation.tick,
+                    int(i),
+                    float(positions[i, 0]),
+                    float(positions[i, 1]),
+                )
+                for i in np.flatnonzero(changed)
+            ],
+            many=True,
+        )
+        self.last_resource_positions = positions.copy()
         stats = observe_statistics(simulation)
         stats["experiment_id"] = self.experiment_id
         placeholders = ",".join("?" for _ in SAMPLE_COLUMNS)
-        self.connection.execute(
-            f"INSERT INTO samples VALUES ({placeholders})", [stats[c] for c in SAMPLE_COLUMNS]
+        self._write(
+            f"INSERT OR REPLACE INTO samples VALUES ({placeholders})",
+            [stats[c] for c in SAMPLE_COLUMNS],
         )
-        self.connection.executemany(
-            "INSERT INTO resources VALUES (?, ?, ?, ?, ?, ?)",
+        self._write(
+            "INSERT OR REPLACE INTO resources VALUES (?, ?, ?, ?, ?, ?)",
             [
                 (self.experiment_id, simulation.tick, i, float(p[0]), float(p[1]), float(energy))
                 for i, (p, energy) in enumerate(
@@ -280,6 +351,7 @@ class ExperimentLogger:
                     )
                 )
             ],
+            many=True,
         )
         values = []
         for identifier, record in sorted(simulation.records.items()):
@@ -291,19 +363,71 @@ class ExperimentLogger:
                 row["offspring"] = living.offspring
             values.append([row[c] for c in INDIVIDUAL_COLUMNS])
         placeholders = ",".join("?" for _ in INDIVIDUAL_COLUMNS)
-        self.connection.executemany(
-            f"INSERT OR REPLACE INTO individuals VALUES ({placeholders})", values
+        self._write(
+            f"INSERT OR REPLACE INTO individuals VALUES ({placeholders})", values, many=True
         )
         self.last_sample = simulation.tick
         self.samples_since_commit += 1
         if force or self.samples_since_commit >= simulation.config.logging.batch_samples:
-            self.connection.commit()
+            self.commit_boundary()
             self.samples_since_commit = 0
+
+    def append_events(self, events):
+        for event in events:
+            payload = json.dumps(event, sort_keys=True)
+            existing = self.connection.execute(
+                "SELECT details_json FROM events WHERE experiment_id=? AND event_seq=?",
+                (self.experiment_id, event["sequence"]),
+            ).fetchone()
+            if existing:
+                if existing[0] != payload:
+                    raise ValueError("Conflicting event sequence payload")
+                continue
+            self._write(
+                "INSERT INTO events (experiment_id,tick,kind,organism_id,details_json,event_seq) "
+                "VALUES (?,?,?,?,?,?)",
+                (
+                    self.experiment_id,
+                    event["tick"],
+                    event["kind"],
+                    event.get("organism_id"),
+                    payload,
+                    event["sequence"],
+                ),
+            )
+
+    def commit_boundary(self, engine_hash=None):
+        engine_hash = engine_hash or self.simulation.state_fingerprint()
+        self._write(
+            "INSERT OR REPLACE INTO experiment_heads VALUES (?,?,?,?)",
+            (
+                self.experiment_id,
+                self.simulation.tick,
+                self.simulation.event_sequence,
+                engine_hash,
+            ),
+        )
+        try:
+            self.connection.commit()
+        except sqlite3.Error as error:
+            self.connection.rollback()
+            self._retry_writes = True
+            raise RuntimeError(f"SQLite observation commit failed: {error}") from error
+        self._pending_writes.clear()
+        self.committed_hash = engine_hash
+
+    def flush(self):
+        if not self.simulation.at_tick_boundary:
+            raise ValueError("Cannot commit a partial simulation tick")
+        self.observe(force=True)
+        engine_hash = self.simulation.state_fingerprint()
+        if self.connection.in_transaction or getattr(self, "committed_hash", None) != engine_hash:
+            self.commit_boundary(engine_hash)
+        return engine_hash
 
     def export_csv(self) -> Path:
         if not self.closed:
-            self.observe(force=True)
-            self.connection.commit()
+            self.flush()
         destination = self.output / self.experiment_id
         destination.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(self.database) if self.closed else self.connection
@@ -335,6 +459,15 @@ class ExperimentLogger:
         if self.closed:
             return self.summary
         try:
+            if not self.simulation.at_tick_boundary:
+                self.connection.rollback()
+                self.summary = {}
+                self.connection.execute(
+                    "UPDATE experiments SET ended_at=?, status='failed' WHERE id=?",
+                    (datetime.now(UTC).isoformat(), self.experiment_id),
+                )
+                self.connection.commit()
+                return self.summary
             self.observe(force=True)
             self.summary = observe_statistics(self.simulation)
             self.connection.execute(
@@ -351,3 +484,4 @@ class ExperimentLogger:
         finally:
             self.connection.close()
             self.closed = True
+            self.lock.close()

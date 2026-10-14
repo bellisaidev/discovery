@@ -8,7 +8,7 @@ max_population = 256
 resource_count = 140
 resource_radius = 7.0
 resource_capacity = 40.0
-resource_regeneration = 0.08
+resource_regeneration = 0.58
 
 [body]
 radius = 6.0
@@ -75,3 +75,8 @@ sensor_scale = 1.0
 sample_interval = 30
 batch_samples = 20
 diversity_pairs = 128
+
+[checkpoint]
+enabled = true
+interval_ticks = 10000
+previous_versions = 3

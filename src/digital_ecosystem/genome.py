@@ -63,6 +63,27 @@ class Genome:
             self.next_node_id,
         )
 
+    def to_data(self) -> dict:
+        """Lossless order-preserving genetic data, unlike the observational signature."""
+        return {
+            "nodes": [[n.id, n.kind, n.bias] for n in self.nodes.values()],
+            "connections": [[e.source, e.target, e.weight] for e in self.connections],
+            "next_node_id": self.next_node_id,
+        }
+
+    @classmethod
+    def from_data(cls, data: dict, config: NeuralConfig) -> "Genome":
+        nodes = [Node(*row) for row in data["nodes"]]
+        if len({n.id for n in nodes}) != len(nodes):
+            raise ValueError("Duplicate node IDs")
+        genome = cls(
+            {n.id: n for n in nodes},
+            [Connection(*row) for row in data["connections"]],
+            data["next_node_id"],
+        )
+        genome.validate(config)
+        return genome
+
     def perturb_initial(self, config: NeuralConfig, rng: np.random.Generator) -> None:
         for edge in self.connections:
             edge.weight = float(

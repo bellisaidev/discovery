@@ -99,6 +99,13 @@ class LoggingConfig:
 
 
 @dataclass
+class CheckpointConfig:
+    enabled: bool = True  # Automatic saves; manual and regular-close saves remain available.
+    interval_ticks: int = 10000
+    previous_versions: int = 3
+
+
+@dataclass
 class Configuration:
     world: WorldConfig = field(default_factory=WorldConfig)
     body: BodyConfig = field(default_factory=BodyConfig)
@@ -107,6 +114,22 @@ class Configuration:
     reproduction: ReproductionConfig = field(default_factory=ReproductionConfig)
     signals: SignalConfig = field(default_factory=SignalConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
+    checkpoint: CheckpointConfig = field(default_factory=CheckpointConfig)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Configuration":
+        config = cls()
+        sections = {f.name for f in fields(config)}
+        if data.keys() - sections:
+            raise ValueError("Unknown configuration sections")
+        for name, values in data.items():
+            target = getattr(config, name)
+            if not isinstance(values, dict) or values.keys() - {f.name for f in fields(target)}:
+                raise ValueError(f"Invalid fields in [{name}]")
+            for key, value in values.items():
+                setattr(target, key, value)
+        config.validate()
+        return config
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> "Configuration":
@@ -153,6 +176,8 @@ class Configuration:
                 elif not math.isfinite(value) or value < 0:
                     raise ValueError(f"{label} must be finite and nonnegative")
         w, b, n, s, r = self.world, self.body, self.neural, self.signals, self.reproduction
+        if self.checkpoint.interval_ticks <= 0 or self.checkpoint.previous_versions < 3:
+            raise ValueError("Checkpoint interval must be positive; retain at least 3 predecessors")
         for label, value in {
             "world.dt": w.dt,
             "body.radius": b.radius,

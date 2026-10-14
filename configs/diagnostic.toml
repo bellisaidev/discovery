@@ -24,3 +24,8 @@ offspring_energy = 40.0
 cost = 5.0
 reserve = 20.0
 cooldown = 3.0
+
+[checkpoint]
+enabled = true
+interval_ticks = 10000
+previous_versions = 3

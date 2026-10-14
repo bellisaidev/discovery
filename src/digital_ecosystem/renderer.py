@@ -12,7 +12,16 @@ from .sensors import SENSOR_NAMES
 
 
 class Renderer:
-    def __init__(self, simulation, on_new=None, on_export=None):
+    def __init__(
+        self,
+        simulation,
+        on_new=None,
+        on_export=None,
+        on_save=None,
+        on_load=None,
+        on_list=None,
+        on_close=None,
+    ):
         pygame.init()
         self.screen = pygame.display.set_mode((1380, 820), pygame.RESIZABLE)
         pygame.display.set_caption("Digital Life Lab — V1")
@@ -21,6 +30,17 @@ class Renderer:
         self.title = pygame.font.Font(None, 30)
         self.simulation = simulation
         self.on_new, self.on_export = on_new, on_export
+        self.on_save, self.on_load, self.on_list, self.on_close = (
+            on_save,
+            on_load,
+            on_list,
+            on_close,
+        )
+        self.checkpoint_text = ""
+        self.checkpoint_active = False
+        self.recent_index = -1
+        self.on_tick = None
+        self.observation_pending = False
         self.paused = False
         self.speed = 1
         self.selected = None
@@ -44,7 +64,7 @@ class Renderer:
     def _layout(self):
         width, height = self.screen.get_size()
         panel_width = min(380, max(300, width // 3))
-        area = pygame.Rect(12, 112, max(100, width - panel_width - 32), max(100, height - 132))
+        area = pygame.Rect(12, 150, max(100, width - panel_width - 32), max(100, height - 170))
         w = self.simulation.config.world
         scale = min(area.width / w.width, area.height / w.height)
         viewport = pygame.Rect(area.x, area.y, round(w.width * scale), round(w.height * scale))
@@ -94,6 +114,23 @@ class Renderer:
         pygame.draw.rect(screen, (39, 50, 65), self.buttons["new"], border_radius=4)
         self._text("Nuovo esperimento", 230, 79)
         self._text(self.message[:90], 412, 80, small=True)
+        for name, label, x, width in (
+            ("save", "Salva .dlcp", 14, 112),
+            ("load", "Carica", 134, 82),
+            ("recent", "Recenti", 224, 82),
+        ):
+            self.buttons[name] = pygame.Rect(x, 109, width, 28)
+            pygame.draw.rect(screen, (39, 50, 65), self.buttons[name], border_radius=4)
+            self._text(label, x + 7, 115)
+        self.checkpoint_rect = pygame.Rect(316, 109, max(100, screen.get_width() - 335), 28)
+        pygame.draw.rect(
+            screen, (44, 65, 79) if self.checkpoint_active else (28, 38, 51), self.checkpoint_rect
+        )
+        screen.set_clip(self.checkpoint_rect)
+        self._text(
+            self.checkpoint_text or "Percorso .dlcp (Invio per caricare)", 322, 116, small=True
+        )
+        screen.set_clip(None)
         viewport, scale, panel_x = self._layout()
         pygame.draw.rect(screen, (23, 32, 40), viewport)
         screen.set_clip(viewport)
@@ -183,7 +220,7 @@ class Renderer:
             viewport.bottom + 6,
             small=True,
         )
-        x, y = panel_x + 12, 117
+        x, y = panel_x + 12, 155
         self._text("Osservazione", x, y)
         y += 30
         if selected:
@@ -224,7 +261,53 @@ class Renderer:
         )
         pygame.display.flip()
 
+    def _observe_tick(self):
+        try:
+            if self.on_tick:
+                self.on_tick(self.simulation)
+        except (OSError, ValueError, RuntimeError) as error:
+            self.paused = True
+            self.observation_pending = True
+            self.message = str(error)
+            return False
+        self.observation_pending = False
+        return True
+
     def _command(self, command):
+        if command in {"play", "tick"} and self.observation_pending:
+            if not self._observe_tick():
+                return
+        if command in {"save", "load", "recent"}:
+            try:
+                if command == "save" and self.on_save:
+                    self.paused = True
+                    self.accumulator = 0
+                    self.message = "Salvataggio checkpoint..."
+                    self.draw()
+                    self.checkpoint_text = str(self.on_save())
+                    self.observation_pending = False
+                    self.message = "Checkpoint salvato."
+                elif command == "load" and self.on_load:
+                    self.paused = True
+                    replacement = self.on_load(self.checkpoint_text)
+                    self.simulation = replacement
+                    self.observation_pending = False
+                    self.selected = None
+                    self.trails.clear()
+                    self.accumulator = 0
+                    self.actual_speed = 0
+                    self.message = f"Checkpoint caricato al tick {replacement.tick}; in pausa."
+                elif command == "recent" and self.on_list:
+                    choices = self.on_list()
+                    if choices:
+                        self.recent_index = (self.recent_index + 1) % len(choices)
+                        self.checkpoint_text = str(choices[self.recent_index])
+                    else:
+                        self.message = "Nessun checkpoint disponibile."
+            except (OSError, ValueError, RuntimeError) as error:
+                self.paused = True
+                self.message = str(error)
+            return
         if command == "play":
             self.paused = not self.paused
             self.accumulator = 0
@@ -232,8 +315,7 @@ class Renderer:
             self.paused = True
             self.accumulator = 0
             self.simulation.step()
-            if self.on_tick:
-                self.on_tick(self.simulation)
+            self._observe_tick()
         elif command == "speed":
             speeds = [1, 4, 16, 64]
             self.speed = speeds[(speeds.index(self.speed) + 1) % 4]
@@ -250,14 +332,26 @@ class Renderer:
                 if not 0 <= seed < 2**63:
                     raise ValueError
                 self.simulation = self.on_new(seed)
+                self.observation_pending = False
                 self.selected = None
                 self.trails.clear()
                 self.accumulator = 0
                 self.message = f"Nuovo esperimento, seed {seed}"
-            except ValueError:
-                self.message = "Seed richiesto: intero da 0 a 2^63 - 1."
+            except (ValueError, OSError, RuntimeError) as error:
+                self.paused = True
+                self.message = f"Nuovo esperimento non avviato: {error}"
 
-    def run(self, on_tick=None, max_frames: int | None = None):
+    def _request_close(self):
+        try:
+            if self.on_close:
+                self.on_close()
+            return True
+        except (OSError, ValueError, RuntimeError) as error:
+            self.paused = True
+            self.message = f"Chiusura sospesa; riprova salvataggio: {error}"
+            return False
+
+    def run(self, on_tick=None, max_frames: int | None = None, should_stop=None):
         self.on_tick = on_tick
         frames = 0
         running = True
@@ -269,9 +363,10 @@ class Renderer:
                 elapsed = min(self.clock.tick(60) / 1000, 0.25)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        running = False
+                        running = not self._request_close()
                     elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         self.seed_active = self.seed_rect.collidepoint(event.pos)
+                        self.checkpoint_active = self.checkpoint_rect.collidepoint(event.pos)
                         for name, rectangle in self.buttons.items():
                             if rectangle.collidepoint(event.pos):
                                 self._command(name)
@@ -288,7 +383,15 @@ class Renderer:
                                 if nearest[0] < max(12, 10 / scale):
                                     self.selected = nearest[1]
                     elif event.type == pygame.KEYDOWN:
-                        if self.seed_active:
+                        if self.checkpoint_active:
+                            if event.key == pygame.K_BACKSPACE:
+                                self.checkpoint_text = self.checkpoint_text[:-1]
+                            elif event.key == pygame.K_RETURN:
+                                self._command("load")
+                                self.checkpoint_active = False
+                            elif event.unicode and event.unicode.isprintable():
+                                self.checkpoint_text += event.unicode
+                        elif self.seed_active:
                             if event.key == pygame.K_BACKSPACE:
                                 self.seed_text = self.seed_text[:-1]
                             elif event.key == pygame.K_RETURN:
@@ -301,17 +404,19 @@ class Renderer:
                         elif event.key == pygame.K_PERIOD:
                             self._command("tick")
                         elif event.key == pygame.K_ESCAPE:
-                            running = False
+                            running = not self._request_close()
                 if not self.paused and running:
                     dt = self.simulation.config.world.dt
                     self.accumulator = min(self.accumulator + elapsed * self.speed, dt * 256)
                     work_start = time.perf_counter()
                     while self.accumulator >= dt:
+                        if should_stop and should_stop():
+                            break
                         self.simulation.step()
                         measured_ticks += 1
                         self.accumulator -= dt
-                        if on_tick:
-                            on_tick(self.simulation)
+                        if not self._observe_tick():
+                            break
                         if time.perf_counter() - work_start > 0.025:
                             break
                 now = time.perf_counter()
@@ -324,6 +429,10 @@ class Renderer:
                 self.draw()
                 frames += 1
                 if max_frames is not None and frames >= max_frames:
+                    if not self._request_close():
+                        raise RuntimeError(self.message)
                     running = False
+                if should_stop and should_stop():
+                    running = not self._request_close()
         finally:
             pygame.quit()

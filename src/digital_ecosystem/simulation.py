@@ -63,6 +63,9 @@ class Simulation:
         )
         self.tick = 0
         self.events = []
+        self.event_sequence = 0
+        self.pending_genomes = {}
+        self.at_tick_boundary = True
         self.births = 0
         self.deaths = 0
         self.contacts = 0
@@ -72,6 +75,13 @@ class Simulation:
             self._record_birth(organism, initial=True)
 
     def _record_birth(self, organism: Organism, initial: bool = False) -> None:
+        import hashlib
+
+        from .state import canonical_json
+
+        genome_data = organism.genome.to_data()
+        genome_id = hashlib.sha256(canonical_json(genome_data)).hexdigest()
+        self.pending_genomes[genome_id] = genome_data
         self.records[organism.id] = {
             "id": organism.id,
             "parent_id": organism.parent_id,
@@ -87,10 +97,11 @@ class Simulation:
             "neurons": len(organism.genome.nodes),
             "connections": len(organism.genome.connections),
             "genome_signature": organism.genome.signature(),
+            "genome_id": genome_id,
         }
         if not initial:
             self.births += 1
-            self.events.append(
+            self._event(
                 {
                     "tick": self.tick,
                     "kind": "birth",
@@ -116,7 +127,7 @@ class Simulation:
         )
         del self.world.organisms[organism.id]
         self.deaths += 1
-        self.events.append(
+        self._event(
             {
                 "tick": self.tick,
                 "kind": "death",
@@ -126,7 +137,12 @@ class Simulation:
             }
         )
 
+    def _event(self, event: dict) -> None:
+        self.event_sequence += 1
+        self.events.append(dict(event, sequence=self.event_sequence))
+
     def step(self) -> None:
+        self.at_tick_boundary = False
         self.tick += 1
         dt, b = self.config.world.dt, self.config.body
         for organism in list(self.world.organisms.values()):
@@ -155,12 +171,24 @@ class Simulation:
             if child:
                 self._record_birth(child)
             elif blocked:
-                self.events.append({"tick": self.tick, "kind": blocked, "organism_id": organism.id})
+                self._event({"tick": self.tick, "kind": blocked, "organism_id": organism.id})
                 self.population_limit_hits += blocked == "population_limit"
         self.world.regenerate()
         if self.signals is not None:
             self.signals.advance(emissions)
         self.world.rebuild_body_index()
+        self.at_tick_boundary = True
+
+    def to_state(self) -> dict:
+        from .state import capture
+
+        return capture(self)
+
+    @classmethod
+    def from_state(cls, state: dict) -> "Simulation":
+        from .state import restore
+
+        return restore(state)
 
     def snapshot(self) -> dict:
         """Detached numerical data. It contains no mutable references into the engine."""
@@ -199,45 +227,11 @@ class Simulation:
 
     def state_fingerprint(self) -> str:
         """Canonical complete dynamic state for reproducibility checks (excluding observations)."""
-        import hashlib
-        import json
+        from .state import fingerprint
 
-        digest = hashlib.sha256()
-        digest.update(str(self.tick).encode())
-        for identifier, organism in sorted(self.world.organisms.items()):
-            digest.update(
-                str(
-                    (
-                        identifier,
-                        organism.parent_id,
-                        organism.lineage_id,
-                        organism.generation,
-                        organism.energy,
-                        organism.age,
-                        organism.orientation,
-                        organism.last_birth_age,
-                    )
-                ).encode()
-            )
-            for array in (
-                organism.position,
-                organism.velocity,
-                organism.brain.acquired,
-                organism.brain.activities,
-                organism.sensors,
-                organism.outputs,
-            ):
-                digest.update(array.tobytes())
-            digest.update(organism.genome.signature().encode())
-        digest.update(self.world.resource_energy.tobytes())
-        if self.signals:
-            digest.update(self.signals.field.tobytes())
-            for tick, identifiers, xs, ys, amplitudes in self.signals.history:
-                digest.update(str(tick).encode())
-                for array in (identifiers, xs, ys, amplitudes):
-                    digest.update(array.tobytes())
-        digest.update(
-            json.dumps(self.reproduction.placement_rng.bit_generator.state, sort_keys=True).encode()
-        )
-        digest.update(str(self.reproduction.next_id).encode())
-        return digest.hexdigest()
+        state = self.to_state()
+        # Delivery queues are observations; logger draining them cannot change the engine.
+        state.pop("events")
+        state.pop("pending_genomes")
+        state["config"].pop("checkpoint")
+        return fingerprint(state)
