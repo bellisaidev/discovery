@@ -1,0 +1,90 @@
+{
+  "environment": {
+    "python": "3.12.15",
+    "numpy": "2.5.4",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "Intel64 Family 6 Model 158 Stepping 10, GenuineIntel"
+  },
+  "method": "35 warmup ticks; tracing only during warmup; no logger or renderer; reproduction threshold 1, cheap actions and metabolism for fixed-population diagnostics.",
+  "memory_limit": "Tracemalloc and NumPy buffers; excludes total process RSS and SDL.",
+  "results": [
+    {
+      "population": 10,
+      "signals": false,
+      "measured_ticks": 180,
+      "mean_ms_per_tick": 2.2789183333265504,
+      "p95_ms_per_tick": 2.4279599991132272,
+      "ticks_per_second": 438.80466683520604,
+      "traced_current_bytes_after_warmup": 443144,
+      "traced_peak_bytes_after_warmup": 481198,
+      "signal_numpy_buffer_bytes": 0,
+      "per_emitter_reference_field_bytes": 72000,
+      "energy_balance_error": 5.4569682106375694e-12
+    },
+    {
+      "population": 10,
+      "signals": true,
+      "measured_ticks": 180,
+      "mean_ms_per_tick": 4.49466333347017,
+      "p95_ms_per_tick": 5.030640000404674,
+      "ticks_per_second": 222.48607421903066,
+      "traced_current_bytes_after_warmup": 733909,
+      "traced_peak_bytes_after_warmup": 777368,
+      "signal_numpy_buffer_bytes": 271992,
+      "per_emitter_reference_field_bytes": 72000,
+      "energy_balance_error": 5.4569682106375694e-12
+    },
+    {
+      "population": 100,
+      "signals": false,
+      "measured_ticks": 180,
+      "mean_ms_per_tick": 25.72387055552099,
+      "p95_ms_per_tick": 29.717774999426176,
+      "ticks_per_second": 38.87439869679234,
+      "traced_current_bytes_after_warmup": 3798890,
+      "traced_peak_bytes_after_warmup": 3837674,
+      "signal_numpy_buffer_bytes": 0,
+      "per_emitter_reference_field_bytes": 720000,
+      "energy_balance_error": 4.001776687800884e-11
+    },
+    {
+      "population": 100,
+      "signals": true,
+      "measured_ticks": 180,
+      "mean_ms_per_tick": 47.025371111127846,
+      "p95_ms_per_tick": 53.19858999955613,
+      "ticks_per_second": 21.265116603478862,
+      "traced_current_bytes_after_warmup": 4304785,
+      "traced_peak_bytes_after_warmup": 4384929,
+      "signal_numpy_buffer_bytes": 466392,
+      "per_emitter_reference_field_bytes": 720000,
+      "energy_balance_error": 4.001776687800884e-11
+    },
+    {
+      "population": 256,
+      "signals": false,
+      "measured_ticks": 180,
+      "mean_ms_per_tick": 72.70191722225516,
+      "p95_ms_per_tick": 88.4800499999983,
+      "ticks_per_second": 13.75479544704338,
+      "traced_current_bytes_after_warmup": 9620846,
+      "traced_peak_bytes_after_warmup": 9716358,
+      "signal_numpy_buffer_bytes": 0,
+      "per_emitter_reference_field_bytes": 1843200,
+      "energy_balance_error": 4.3655745685100555e-11
+    },
+    {
+      "population": 256,
+      "signals": true,
+      "measured_ticks": 180,
+      "mean_ms_per_tick": 119.37013500004873,
+      "p95_ms_per_tick": 126.30443000089144,
+      "ticks_per_second": 8.37730475884602,
+      "traced_current_bytes_after_warmup": 10509495,
+      "traced_peak_bytes_after_warmup": 10702343,
+      "signal_numpy_buffer_bytes": 803352,
+      "per_emitter_reference_field_bytes": 1843200,
+      "energy_balance_error": 3.637978807091713e-11
+    }
+  ]
+}

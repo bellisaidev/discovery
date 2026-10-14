@@ -1,0 +1,61 @@
+{
+  "database": "experiments\\final-diagnostic\\lab.sqlite3",
+  "sqlite_integrity_check": "ok",
+  "experiments": [
+    {
+      "experiment_id": "5a5c8e56-c3d7-4659-8fd5-ee0efe4d860e",
+      "seed": 42,
+      "status": "completed",
+      "first_tick": 0,
+      "last_tick": 10000,
+      "samples": 335,
+      "max_absolute_balance_error": 1.3602857507066801e-08,
+      "last_alive_sample_tick": 10000,
+      "death_events": 36,
+      "resources_rows": 13400,
+      "summary": {
+        "action_dissipation": 1761.6594844339625,
+        "balance_error": 1.3602857507066801e-08,
+        "births": 34,
+        "contacts": 433,
+        "death_causes": "{\"energy_exhaustion\": 36}",
+        "death_dissipation": 0.0,
+        "deaths": 36,
+        "dissipated_energy": 3440.9355546376205,
+        "distinct_genomes": 8,
+        "diversity_pairs": 28,
+        "generation_distribution": "{\"0\": 2, \"1\": 1, \"2\": 3, \"3\": 1, \"4\": 1}",
+        "genetic_diversity": 0.001882698486409072,
+        "harvested_energy": 2149.8171849815935,
+        "initial_energy": 5800.0,
+        "lineages": 2,
+        "max_generation": 4,
+        "mean_connections": 176.125,
+        "mean_energy": 63.610203794720846,
+        "mean_generation": 1.75,
+        "mean_neurons": 30.0,
+        "metabolic_dissipation": 1509.2760701887291,
+        "offspring_energy": 1360.0,
+        "population": 8,
+        "population_limit_hits": 0,
+        "regenerated_energy": 1334.0463852328671,
+        "reproductive_dissipation": 170.0,
+        "resource_energy": 3184.229200251082,
+        "signal0_amount": 4429.645754400745,
+        "signal0_emissions": 150916,
+        "signal1_amount": 5073.067284070284,
+        "signal1_emissions": 150916,
+        "simulated_time": 333.3333333333333,
+        "tick": 10000,
+        "total_energy": 3693.110830608849
+      },
+      "software": {
+        "numpy": "2.5.4",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "pygame-ce": "2.5.8",
+        "python": "3.12.15",
+        "source_sha256": "fe470512dbfab7f5c43b4aeb0128dbc4696c5b18b082d8fb306f5f32b80932c9"
+      }
+    }
+  ]
+}

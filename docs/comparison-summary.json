@@ -1,0 +1,756 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "steps": 300,
+  "conditions": {
+    "p0m0s0": {
+      "population": {
+        "n": 3,
+        "mean": 25.666666666666668,
+        "sample_std": 12.741009902410928,
+        "min": 11.0,
+        "max": 34.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 15.666666666666666,
+        "sample_std": 12.741009902410928,
+        "min": 1.0,
+        "max": 24.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 89.73208277674921,
+        "sample_std": 66.48186844687307,
+        "min": 50.158973825903686,
+        "max": 166.48630894551678
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 30.0,
+        "sample_std": 0.0,
+        "min": 30.0,
+        "max": 30.0
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 176.0,
+        "sample_std": 0.0,
+        "min": 176.0,
+        "max": 176.0
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.001011376048803616,
+        "sample_std": 4.1326081243663744e-05,
+        "min": 0.000980193163817599,
+        "max": 0.001058249526938819
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 222.05370084469382,
+        "sample_std": 134.56372187072938,
+        "min": 98.92714983846088,
+        "max": 365.6979398636289
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 626.6666666666666,
+        "sample_std": 509.64039609643714,
+        "min": 40.0,
+        "max": 960.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 209.33333333333334,
+        "sample_std": 185.64841322600452,
+        "min": 0.0,
+        "max": 354.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "p0m0s1": {
+      "population": {
+        "n": 3,
+        "mean": 26.666666666666668,
+        "sample_std": 12.858201014657272,
+        "min": 12.0,
+        "max": 36.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 16.666666666666668,
+        "sample_std": 12.858201014657272,
+        "min": 2.0,
+        "max": 26.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 82.85277461593382,
+        "sample_std": 60.209363887396506,
+        "min": 47.74208974546056,
+        "max": 152.37538901795418
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 30.0,
+        "sample_std": 0.0,
+        "min": 30.0,
+        "max": 30.0
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 176.0,
+        "sample_std": 0.0,
+        "min": 176.0,
+        "max": 176.0
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.0010031564853858414,
+        "sample_std": 3.598458521803798e-05,
+        "min": 0.0009619712105162398,
+        "max": 0.0010285156964066435
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 230.18624587737418,
+        "sample_std": 182.33958887824863,
+        "min": 118.85751532904854,
+        "max": 440.61546823531575
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 666.6666666666666,
+        "sample_std": 514.328040586291,
+        "min": 80.0,
+        "max": 1040.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 240.0,
+        "sample_std": 184.35563457621794,
+        "min": 83.0,
+        "max": 443.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 6546.0,
+        "sample_std": 2877.462597498011,
+        "min": 3225.0,
+        "max": 8296.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 6546.0,
+        "sample_std": 2877.462597498011,
+        "min": 3225.0,
+        "max": 8296.0
+      }
+    },
+    "p0m1s0": {
+      "population": {
+        "n": 3,
+        "mean": 25.666666666666668,
+        "sample_std": 12.741009902410928,
+        "min": 11.0,
+        "max": 34.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 15.666666666666666,
+        "sample_std": 12.741009902410928,
+        "min": 1.0,
+        "max": 24.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 90.57043086339058,
+        "sample_std": 65.77752628888281,
+        "min": 52.43776327538706,
+        "max": 166.52356199782793
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 29.97855392156863,
+        "sample_std": 0.06432072590876368,
+        "min": 29.90625,
+        "max": 30.029411764705884
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 175.38235294117646,
+        "sample_std": 1.1994087355355134,
+        "min": 174.0,
+        "max": 176.14705882352942
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.005307747782064626,
+        "sample_std": 0.005997358875637786,
+        "min": 0.0010929798130650088,
+        "max": 0.012173819790464767
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 250.87291920649326,
+        "sample_std": 183.0834547172715,
+        "min": 98.96780900206952,
+        "max": 454.1564584074217
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 626.6666666666666,
+        "sample_std": 509.64039609643714,
+        "min": 40.0,
+        "max": 960.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 220.66666666666666,
+        "sample_std": 196.10286416402317,
+        "min": 0.0,
+        "max": 375.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "p0m1s1": {
+      "population": {
+        "n": 3,
+        "mean": 26.0,
+        "sample_std": 12.288205727444508,
+        "min": 12.0,
+        "max": 35.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 16.0,
+        "sample_std": 12.288205727444508,
+        "min": 2.0,
+        "max": 25.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 84.48762811884848,
+        "sample_std": 58.71118549466039,
+        "min": 49.66265614544686,
+        "max": 152.27291725841408
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 29.98801843317972,
+        "sample_std": 0.04768639012083604,
+        "min": 29.93548387096774,
+        "max": 30.02857142857143
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 175.59600614439321,
+        "sample_std": 0.826547937630242,
+        "min": 174.6451612903226,
+        "max": 176.14285714285714
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.004077369751554716,
+        "sample_std": 0.003852180676817832,
+        "min": 0.0011140418729420464,
+        "max": 0.008431891480541284
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 254.02959894790555,
+        "sample_std": 240.2425483028038,
+        "min": 101.67572376808745,
+        "max": 530.9743241764055
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 640.0,
+        "sample_std": 491.5282290977803,
+        "min": 80.0,
+        "max": 1000.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 252.66666666666666,
+        "sample_std": 124.94932306072464,
+        "min": 109.0,
+        "max": 336.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 6588.0,
+        "sample_std": 2915.232923798714,
+        "min": 3225.0,
+        "max": 8397.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 6588.0,
+        "sample_std": 2915.232923798714,
+        "min": 3225.0,
+        "max": 8397.0
+      }
+    },
+    "p1m0s0": {
+      "population": {
+        "n": 3,
+        "mean": 26.0,
+        "sample_std": 13.228756555322953,
+        "min": 11.0,
+        "max": 36.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 16.0,
+        "sample_std": 13.228756555322953,
+        "min": 1.0,
+        "max": 26.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 90.77466734873666,
+        "sample_std": 68.59515703272425,
+        "min": 48.54153743772106,
+        "max": 169.92197951452565
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 30.0,
+        "sample_std": 0.0,
+        "min": 30.0,
+        "max": 30.0
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 176.0,
+        "sample_std": 0.0,
+        "min": 176.0,
+        "max": 176.0
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.0010216275316519562,
+        "sample_std": 3.4405234796492775e-05,
+        "min": 0.000989980782162133,
+        "max": 0.001058249526938819
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 258.4635049607923,
+        "sample_std": 160.17211231504356,
+        "min": 143.04254761958367,
+        "max": 441.3283184276477
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 640.0,
+        "sample_std": 529.1502622129182,
+        "min": 40.0,
+        "max": 1040.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 254.66666666666666,
+        "sample_std": 232.00287354542257,
+        "min": 0.0,
+        "max": 454.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "p1m0s1": {
+      "population": {
+        "n": 3,
+        "mean": 26.0,
+        "sample_std": 13.228756555322953,
+        "min": 11.0,
+        "max": 36.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 16.0,
+        "sample_std": 13.228756555322953,
+        "min": 1.0,
+        "max": 26.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 86.72034454342281,
+        "sample_std": 66.3591711919418,
+        "min": 48.17295166776793,
+        "max": 163.34483415927764
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 30.0,
+        "sample_std": 0.0,
+        "min": 30.0,
+        "max": 30.0
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 176.0,
+        "sample_std": 0.0,
+        "min": 176.0,
+        "max": 176.0
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.0010165195148853004,
+        "sample_std": 3.866145605224183e-05,
+        "min": 0.0009819190527471002,
+        "max": 0.001058249526938819
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 211.1593121301496,
+        "sample_std": 241.48723928366888,
+        "min": 49.110757878560385,
+        "max": 488.70658100392075
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 640.0,
+        "sample_std": 529.1502622129182,
+        "min": 40.0,
+        "max": 1040.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 197.0,
+        "sample_std": 174.0,
+        "min": 23.0,
+        "max": 371.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 6507.0,
+        "sample_std": 2889.2372695920976,
+        "min": 3173.0,
+        "max": 8279.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 6507.0,
+        "sample_std": 2889.2372695920976,
+        "min": 3173.0,
+        "max": 8279.0
+      }
+    },
+    "p1m1s0": {
+      "population": {
+        "n": 3,
+        "mean": 25.666666666666668,
+        "sample_std": 12.858201014657272,
+        "min": 11.0,
+        "max": 35.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 15.666666666666666,
+        "sample_std": 12.858201014657274,
+        "min": 1.0,
+        "max": 25.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 91.3084186713756,
+        "sample_std": 68.02131751135623,
+        "min": 50.07038091160956,
+        "max": 169.81930068653716
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 29.98801843317972,
+        "sample_std": 0.04768639012083604,
+        "min": 29.93548387096774,
+        "max": 30.02857142857143
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 175.59600614439321,
+        "sample_std": 0.826547937630242,
+        "min": 174.6451612903226,
+        "max": 176.14285714285714
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.004063468702477567,
+        "sample_std": 0.003861770747427107,
+        "min": 0.0010929798130650088,
+        "max": 0.008428890246615603
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 254.3085598321918,
+        "sample_std": 156.47021670778153,
+        "min": 141.58361299935285,
+        "max": 432.9524442959587
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 626.6666666666666,
+        "sample_std": 514.328040586291,
+        "min": 40.0,
+        "max": 1000.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 205.33333333333334,
+        "sample_std": 178.0514906798967,
+        "min": 0.0,
+        "max": 317.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "p1m1s1": {
+      "population": {
+        "n": 3,
+        "mean": 26.0,
+        "sample_std": 13.076696830622021,
+        "min": 11.0,
+        "max": 35.0
+      },
+      "births": {
+        "n": 3,
+        "mean": 16.0,
+        "sample_std": 13.076696830622021,
+        "min": 1.0,
+        "max": 25.0
+      },
+      "deaths": {
+        "n": 3,
+        "mean": 0.0,
+        "sample_std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "mean_energy": {
+        "n": 3,
+        "mean": 87.19971731594124,
+        "sample_std": 66.03171413300713,
+        "min": 48.039365439494006,
+        "max": 163.43708522506824
+      },
+      "mean_neurons": {
+        "n": 3,
+        "mean": 29.988690476190474,
+        "sample_std": 0.04657714323688003,
+        "min": 29.9375,
+        "max": 30.02857142857143
+      },
+      "mean_connections": {
+        "n": 3,
+        "mean": 175.6205357142857,
+        "sample_std": 0.7842290141812348,
+        "min": 174.71875,
+        "max": 176.14285714285714
+      },
+      "genetic_diversity": {
+        "n": 3,
+        "mean": 0.004114656459854364,
+        "sample_std": 0.003935415201576184,
+        "min": 0.0010929798130650088,
+        "max": 0.008564813665317266
+      },
+      "lineages": {
+        "n": 3,
+        "mean": 10.0,
+        "sample_std": 0.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "harvested_energy": {
+        "n": 3,
+        "mean": 236.78591809925283,
+        "sample_std": 224.24471637658652,
+        "min": 96.81774547544191,
+        "max": 495.42942191285374
+      },
+      "offspring_energy": {
+        "n": 3,
+        "mean": 640.0,
+        "sample_std": 523.0678732248808,
+        "min": 40.0,
+        "max": 1000.0
+      },
+      "contacts": {
+        "n": 3,
+        "mean": 178.33333333333334,
+        "sample_std": 131.60673741618754,
+        "min": 27.0,
+        "max": 266.0
+      },
+      "signal0_emissions": {
+        "n": 3,
+        "mean": 6577.333333333333,
+        "sample_std": 2948.7428394713115,
+        "min": 3173.0,
+        "max": 8334.0
+      },
+      "signal1_emissions": {
+        "n": 3,
+        "mean": 6577.333333333333,
+        "sample_std": 2948.7428394713115,
+        "min": 3173.0,
+        "max": 8334.0
+      }
+    }
+  },
+  "interpretation": "Descriptive observations only; no causal or adaptive conclusion.",
+  "paired_design": "Same seed and physical parameters in all eight conditions."
+}

@@ -1,0 +1,61 @@
+{
+  "database": "experiments\\final-100k\\lab.sqlite3",
+  "sqlite_integrity_check": "ok",
+  "experiments": [
+    {
+      "experiment_id": "8858dbd5-6a2d-4113-b337-843992962756",
+      "seed": 42,
+      "status": "completed",
+      "first_tick": 0,
+      "last_tick": 100000,
+      "samples": 3335,
+      "max_absolute_balance_error": 4.984030965715647e-10,
+      "last_alive_sample_tick": 5070,
+      "death_events": 11,
+      "resources_rows": 466900,
+      "summary": {
+        "action_dissipation": 367.9257145769956,
+        "balance_error": -4.856701707467437e-10,
+        "births": 1,
+        "contacts": 39,
+        "death_causes": "{\"energy_exhaustion\": 11}",
+        "death_dissipation": 0.0,
+        "deaths": 11,
+        "dissipated_energy": 1157.2010300738198,
+        "distinct_genomes": 0,
+        "diversity_pairs": 0,
+        "generation_distribution": "{}",
+        "genetic_diversity": 0.0,
+        "harvested_energy": 157.20103007432814,
+        "initial_energy": 6600.0,
+        "lineages": 0,
+        "max_generation": 0,
+        "mean_connections": 0.0,
+        "mean_energy": 0.0,
+        "mean_generation": 0.0,
+        "mean_neurons": 0.0,
+        "metabolic_dissipation": 781.2753154969329,
+        "offspring_energy": 55.0,
+        "population": 0,
+        "population_limit_hits": 0,
+        "regenerated_energy": 157.2010300743058,
+        "reproductive_dissipation": 8.0,
+        "resource_energy": 5600.0,
+        "signal0_amount": 1161.9513379956406,
+        "signal0_emissions": 39061,
+        "signal1_amount": 1578.5912868980508,
+        "signal1_emissions": 39061,
+        "simulated_time": 3333.3333333333335,
+        "tick": 100000,
+        "total_energy": 5600.0
+      },
+      "software": {
+        "numpy": "2.5.4",
+        "platform": "Windows-11-10.0.26300-SP0",
+        "pygame-ce": "2.5.8",
+        "python": "3.12.15",
+        "source_sha256": "fe470512dbfab7f5c43b4aeb0128dbc4696c5b18b082d8fb306f5f32b80932c9"
+      }
+    }
+  ]
+}
