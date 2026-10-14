@@ -1,0 +1,26 @@
+# Controlled physical conditions, NOT behavioural steering or a scientific baseline.
+# Output networks remain randomly initialized. Births depend on actual neural outputs.
+[world]
+initial_population = 10
+max_population = 40
+resource_count = 40
+resource_radius = 24.0
+resource_capacity = 100.0
+resource_regeneration = 0.5
+
+[body]
+initial_energy = 180.0
+energy_capacity = 240.0
+metabolism = 0.3
+movement_cost = 0.001
+
+[neural]
+initial_weight_std = 0.6
+
+[reproduction]
+threshold = 0.50
+minimum_energy = 100.0
+offspring_energy = 40.0
+cost = 5.0
+reserve = 20.0
+cooldown = 3.0

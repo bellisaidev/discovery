@@ -208,6 +208,12 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Local laboratory artifacts (retain source configs and validation reports)
+experiments/
+.uv-cache/
+.tools/
+.package-check/
+
 # PyPI configuration file
 .pypirc
 
