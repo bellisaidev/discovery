@@ -1,4 +1,4 @@
-# Digital Life Lab — V1 e Milestone 4
+# Digital Life Lab — Milestone 5 e 6
 
 Laboratorio desktop offline di Artificial Life: dieci organismi iniziali, un mondo continuo
 2D, reti neurali NumPy, metabolismo, riproduzione asessuata, mutazioni strutturali e
@@ -201,7 +201,7 @@ elaborano gli effetti locali; logger, CLI e renderer sono componenti esterni al 
 L'isolamento è architetturale: non è una sandbox per codice arbitrario o plugin ostili.
 World espone interrogazioni geometriche e trasferimenti energetici, mentre Physics
 applica i comandi: futuri materiali o manipolazioni potranno estendere queste interazioni.
-Non sono implementati materiali modificabili, strumenti, costruzioni, Neural Inspector o dashboard.
+Non sono implementati materiali modificabili, strumenti o costruzioni.
 
 ## Checkpoint e ripresa — Milestone 4
 
@@ -317,10 +317,13 @@ configs/                    experimental.toml, diagnostic.toml
 src/digital_ecosystem/      configuration, world, organism, genome, brain,
                             sensors, physics, reproduction, signals, simulation,
                             renderer, experiment_logger, comparison, state,
-                            checkpoint, storage, __main__
+                            checkpoint, storage, observations, observation_hash,
+                            neural_layout, inspector, analytics, dashboard, __main__
 tests/                      core, evolution, signals, logging, comparison, CLI/GUI
 tools/                      benchmark.py, benchmark_checkpoints.py,
-                            capture_gui.py, inspect_results.py
+                            benchmark_observation.py, benchmark_dashboard.py,
+                            capture_gui.py, capture_observation.py,
+                            capture_dashboard.py, inspect_results.py
 docs/                       VALIDATION.md, benchmark.json, gui.png
 pyproject.toml              dipendenze, packaging, pytest, Ruff
 uv.lock                     versioni bloccate
@@ -344,3 +347,67 @@ I test comprendono almeno tre seed e tutte le otto combinazioni di controllo. Un
 di estinzione o l'assenza di emergenza non giustificano aggiustamenti automatici. La V1
 fornisce osservazioni e confronti descrittivi, non dimostrazioni di intelligenza o
 comunicazione significativa.
+
+## Neural Inspector — Milestone 5
+
+Il pulsante **Rete** apre l'Inspector integrato. Selezionare dal mondo oppure
+inserire un ID e premere Invio. **Live** mostra lo stato corrente; **Genoma**
+mostra i parametri ereditabili. Cliccare un neurone per bias e attivazione,
+una riga per evidenziare una connessione. La ruota ingrandisce il grafo; il
+tasto centrale trascina. I filtri isolano plasticità, connessioni incidenti
+e tipi di neuroni. **Righe ±10** scorre i valori delle connessioni. Gli strati
+procedono da sinistra a destra; le connessioni selezionate hanno una freccia.
+
+**Acquisisci snapshot** conserva lo stato neurale al confine corrente, senza
+eseguire inferenza o avanzare il tempo. **Storico: successivo** percorre gli
+snapshot registrati. **Antenato: successivo** risale la genealogia e confronta
+i genomi; le variazioni genetiche sono separate dalla plasticità individuale.
+Gli organismi morti restano consultabili per ID se sono disponibili genomi
+o snapshot. I dati dinamici non registrati sono dichiarati come tali.
+
+Gli snapshot seguono i nuovi checkpoint autosufficienti. I checkpoint M4
+restano caricabili nello stesso ambiente numerico richiesto in precedenza.
+Il contratto per un futuro campionamento automatico è predisposto ma non
+abilitato. Complessità strutturale e plasticità non dimostrano apprendimento
+vantaggioso o maggiore intelligenza.
+
+![Neural Inspector con confronto ancestrale](docs/m5-inspector.png)
+
+Contratti, disponibilità e provenienza dei dati: [docs/OBSERVATIONS.md](docs/OBSERVATIONS.md).
+
+## Dashboard evolutiva — Milestone 6
+
+**Dashboard** apre i grafici dell'esperimento corrente. Le schede comprendono
+popolazione e generazioni, nascite e morti con cause registrate, bilancio e flussi
+energetici, longevità, complessità delle reti e diversità genetica.
+La genealogia si espande progressivamente; selezionare un individuo e usare
+**Apri rete** per consultare l'Inspector. Le vite ancora in corso sono censurate;
+media e mediana della longevità comprendono soltanto le vite concluse al cursore.
+
+La ruota sui grafici ingrandisce l'intervallo; il tasto centrale trascina.
+Cliccare imposta il cursore, trascinare con il tasto sinistro seleziona un
+intervallo e **Usa intervallo** lo applica. Le legende attivano e disattivano
+le serie. Il tooltip legge il campione originale precedente al punto richiesto;
+non interpola dati mancanti. I grafici estesi conservano gli estremi per pixel,
+mentre i dati scientifici originali restano tutti in SQLite. I tassi sono
+calcolati prima della riduzione grafica usando il tempo simulato effettivo.
+
+**SQLite** apre la biblioteca paginata di esperimenti. Il campo del percorso
+permette di consultare un altro database; **Corrente** torna alla simulazione,
+che resta in pausa fino a Play. È possibile avviare soltanto la consultazione:
+
+```powershell
+uv run python -m digital_ecosystem --browse experiments/lab.sqlite3
+uv run python -m digital_ecosystem --browse experiments/lab.sqlite3 --experiment UUID
+```
+
+Questa modalità non costruisce né avanza una simulazione e apre SQLite in sola
+lettura. Nel corrente i campioni pendenti sono mostrati senza forzare commit;
+le analisi degli individui indicano il confine già persistito. L'archivio M4
+rimane consultabile senza inventare stati neurali storici mai registrati.
+Per Dynamic Ecosystem sono predisposti record versionati e marcatori consultabili;
+non vengono applicati interventi ambientali.
+
+![Dashboard da un esperimento M4 reale](docs/m6-dashboard.png)
+
+Risultati, benchmark e limiti: [M5](docs/M5_VALIDATION.md), [M6](docs/M6_VALIDATION.md).

@@ -1,0 +1,90 @@
+{
+  "environment": {
+    "python": "3.12.15",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "numpy": "2.5.4",
+    "pygame": "2.5.8"
+  },
+  "dataset": {
+    "database": "experiments\\m6-performance\\lab.sqlite3",
+    "experiment_id": "bdcde769-391f-41a3-a496-f50d30986543",
+    "end_tick": 2999970,
+    "counts": {
+      "samples": 100000,
+      "events": 1000000,
+      "individuals": 100000
+    },
+    "synthetic": true,
+    "description": "Independent stress records, not a simulated trajectory"
+  },
+  "method": "First SQLite view per group; filesystem cache warmed by integrity hashing, not flushed. Input timings include redraw of cached results; query latencies are separate.",
+  "queries": [
+    {
+      "group": "Popolazione",
+      "first_view_ms": 614.6147000108613,
+      "warm_median_ms": 527.5057999970159,
+      "cached_input_and_redraw_p95_ms": 38.25924000484519,
+      "retained_points": 1750,
+      "source_samples": 100000
+    },
+    {
+      "group": "Eventi",
+      "first_view_ms": 1163.3370999916224,
+      "warm_median_ms": 1072.0575000013923,
+      "cached_input_and_redraw_p95_ms": 56.702020003285725,
+      "retained_points": 2001,
+      "source_samples": 100000
+    },
+    {
+      "group": "Energia",
+      "first_view_ms": 1195.3669999929843,
+      "warm_median_ms": 1037.6915999950143,
+      "cached_input_and_redraw_p95_ms": 43.66080500185488,
+      "retained_points": 1001,
+      "source_samples": 100000
+    },
+    {
+      "group": "Longevita",
+      "first_view_ms": 484.67200000595767,
+      "warm_median_ms": 404.8257999966154,
+      "cached_input_and_redraw_p95_ms": 2.996524998889071,
+      "retained_points": 50,
+      "source_samples": null
+    },
+    {
+      "group": "Reti",
+      "first_view_ms": 547.8000000002794,
+      "warm_median_ms": 516.6911999986041,
+      "cached_input_and_redraw_p95_ms": 19.681360004324233,
+      "retained_points": 2115,
+      "source_samples": 100000
+    },
+    {
+      "group": "Diversita",
+      "first_view_ms": 659.9016999971354,
+      "warm_median_ms": 558.422399990377,
+      "cached_input_and_redraw_p95_ms": 23.179885000718052,
+      "retained_points": 1500,
+      "source_samples": 100000
+    }
+  ],
+  "original_sample_lookup_p95_ms": 0.3185000037774443,
+  "genealogy_cached_nodes": 21,
+  "genealogy_query_plan": [
+    [
+      4,
+      0,
+      46,
+      "SEARCH individuals USING COVERING INDEX individuals_parent (experiment_id=? AND parent_id=? AND id>?)"
+    ]
+  ],
+  "observer_rss_increment_bytes": 12832768,
+  "observer_peak_rss_increment_bytes": 17440768,
+  "memory_method": "OS process working set; peak minus pre-query working set. SDL initialized before baseline; fixture creation was a separate process.",
+  "budgets": {
+    "first_view_2s": true,
+    "cached_input_100ms_p95": true,
+    "memory_64mib": true
+  },
+  "database_sha256_before_after": "cfd1b4c17703f15e7cd031c2e08f2970a7f25daa040ac474be20348adb2108f2"
+}
