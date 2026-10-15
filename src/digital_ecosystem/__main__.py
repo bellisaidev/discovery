@@ -3,6 +3,7 @@
 import argparse
 import json
 import signal
+import sqlite3
 from pathlib import Path
 
 from .checkpoint import CheckpointManager, read_checkpoint, resume, resume_prepared
@@ -15,6 +16,8 @@ def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(description="Digital Life Lab — offline artificial life")
     cli.add_argument("--config", type=Path, default=None)
     cli.add_argument("--resume", type=Path, default=None)
+    cli.add_argument("--browse", type=Path, default=None, help="Read-only SQLite archive browser")
+    cli.add_argument("--experiment", default=None, help="Experiment UUID for --browse")
     cli.add_argument("--headless", action="store_true")
     cli.add_argument("--steps", type=int, default=None, help="Additional ticks; default 10000")
     cli.add_argument("--seed", type=int, default=None)
@@ -37,6 +40,36 @@ def main(argv=None) -> int:
             raise ValueError("Steps must be nonnegative; seed must be in [0, 2**63 - 1]")
         if args.gui_frames is not None and args.gui_frames <= 0:
             raise ValueError("GUI frame count must be positive")
+        if args.experiment is not None and args.browse is None:
+            raise ValueError("--experiment requires --browse")
+        if args.browse is not None:
+            if (
+                args.headless
+                or args.export_csv
+                or any(
+                    value is not None
+                    for value in (
+                        args.resume,
+                        args.seed,
+                        args.config,
+                        args.steps,
+                        args.output,
+                        args.no_plasticity,
+                        args.no_mutations,
+                        args.no_signaling,
+                        args.compare_seeds,
+                    )
+                )
+            ):
+                raise ValueError("--browse rejects simulation, output and export arguments")
+            from .dashboard import DashboardRenderer
+
+            browser = DashboardRenderer(browse=args.browse, experiment_id=args.experiment)
+            try:
+                browser.run(max_frames=args.gui_frames)
+            except KeyboardInterrupt:
+                return 130
+            return 0
         if args.resume is not None:
             if any(
                 value is not None
@@ -78,7 +111,7 @@ def main(argv=None) -> int:
                 return 0
             simulation = Simulation(config, 42 if args.seed is None else args.seed)
             logger = ExperimentLogger(simulation, args.output or Path("experiments"))
-    except (OSError, ValueError, RuntimeError) as error:
+    except (OSError, ValueError, RuntimeError, sqlite3.Error) as error:
         cli.error(str(error))
     manager = CheckpointManager(logger)
     status = "completed"
@@ -139,7 +172,8 @@ def main(argv=None) -> int:
             if stop_requested:
                 status = "interrupted"
         else:
-            from .renderer import Renderer
+            from .dashboard import DashboardRenderer as Renderer
+            from .observations import ExperimentReader, ObservationWriter
 
             renderer = Renderer(
                 simulation,
@@ -153,6 +187,12 @@ def main(argv=None) -> int:
                     reverse=True,
                 ),
                 on_close=lambda: manager.save("close"),
+                on_reader=lambda: ExperimentReader(
+                    logger.database,
+                    connection=logger.connection,
+                    experiment_id=logger.experiment_id,
+                ),
+                on_capture=lambda identifier: ObservationWriter(logger).capture(identifier),
             )
             renderer.paused = args.resume is not None
             renderer.checkpoint_text = "" if args.resume is None else str(args.resume)
