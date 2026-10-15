@@ -24,7 +24,10 @@ from .storage import (
     ExperimentLock,
     export_experiment,
     file_hash,
+    history_digest,
     import_experiment,
+    merge_observations,
+    observation_revision,
     started_at,
     validate_snapshot,
 )
@@ -257,8 +260,13 @@ class CheckpointManager:
             raise ValueError("Configuration changed during experiment; start a new experiment")
         started = time.perf_counter()
         engine_hash = logger.flush()
+        revision = observation_revision(logger.connection, logger.experiment_id)
         fault_hook("after_flush")
-        if self.last_path is not None and self.last_path.exists() and self.last_hash == engine_hash:
+        if (
+            self.last_path is not None
+            and self.last_path.exists()
+            and self.last_hash == (engine_hash, revision)
+        ):
             return self.last_path
         checkpoint_id = str(uuid.uuid4())
         final = self.directory / f"tick-{simulation.tick:012d}-{checkpoint_id}.dlcp"
@@ -315,7 +323,7 @@ class CheckpointManager:
                     os.fsync(descriptor)
                 finally:
                     os.close(descriptor)
-            self.last_path, self.last_hash = final, engine_hash
+            self.last_path, self.last_hash = final, (engine_hash, revision)
             fault_hook("after_publish")
             fault_hook("before_rotation")
             predecessors = sorted(
@@ -384,16 +392,10 @@ def resume_prepared(simulation, manifest, snapshot, destination):
                 simulation.state_fingerprint(),
             )
             if match:
-                comparison = Path(tempfile.mkdtemp(prefix="dlcp-compare-"))
-                try:
-                    export_experiment(logger.connection, identifier, comparison / "history.sqlite3")
-                    match = (
-                        file_hash(comparison / "history.sqlite3")
-                        == (manifest["members"]["experiment.sqlite3"])
+                with closing(sqlite3.connect(snapshot)) as archived:
+                    match = history_digest(logger.connection, identifier) == history_digest(
+                        archived, identifier
                     )
-                finally:
-                    (comparison / "history.sqlite3").unlink(missing_ok=True)
-                    comparison.rmdir()
             if not match:
                 logger.lock.close()
                 logger.experiment_id = str(uuid.uuid4())
@@ -408,6 +410,8 @@ def resume_prepared(simulation, manifest, snapshot, destination):
                 simulation.tick,
                 manifest["metadata"],
             )
+        else:
+            merge_observations(logger.connection, snapshot, identifier, simulation.tick)
         logger.last_sample = manifest["last_sample"]
         logger.samples_since_commit = 0
         logger.archived_id = max(simulation.records, default=0)
