@@ -217,3 +217,57 @@ def test_sigint_request_finishes_current_tick_before_checkpoint(tmp_path, monkey
     checkpoint = next(tmp_path.glob("checkpoints/**/*.dlcp"))
     with read_checkpoint(checkpoint) as (restored, _, _):
         assert restored.tick == 1 and restored.at_tick_boundary
+
+
+def test_inspector_gui_capture_history_comparison_and_no_engine_mutation(tmp_path):
+    script = """
+import sys, pygame
+from pathlib import Path
+from digital_ecosystem.configuration import Configuration
+from digital_ecosystem.simulation import Simulation
+from digital_ecosystem.experiment_logger import ExperimentLogger
+from digital_ecosystem.observations import ExperimentReader,ObservationWriter
+from digital_ecosystem.renderer import Renderer
+s=Simulation(Configuration.load('configs/diagnostic.toml'))
+l=ExperimentLogger(s,Path(sys.argv[1]))
+for _ in range(17): s.step(); l.observe()
+r=Renderer(s,on_reader=lambda:ExperimentReader(connection=l.connection,experiment_id=l.experiment_id),
+             on_capture=ObservationWriter(l).capture)
+r.selected=11
+before=s.state_fingerprint()
+r._command('inspector'); r.draw()
+r._command('inspect_capture')
+r._command('inspect_genetic'); r.draw()
+assert r.inspector.cached_data.activities is None
+assert 'DISPONIBILE' in r.inspector.availability
+assert 'NON REGISTRATO' not in r.inspector.availability
+r._command('inspect_snapshot'); r.draw()
+assert r.inspector.mode=='snapshot' and r.inspector.cached_data.tick==17
+r._command('inspect_ancestor'); r.draw()
+assert r.inspector.ancestor_id==1
+r._command('inspect_filter'); r._command('inspect_down'); r.draw()
+r.inspector.search_active=True
+r.inspector.search='1'
+r.inspector.event(pygame.event.Event(pygame.KEYDOWN,key=pygame.K_RETURN,unicode=''),r)
+r.draw()
+assert r.selected==1
+assert s.state_fingerprint()==before
+# A cached birth genome must not freeze the live activations or plasticity.
+s.step(); l.observe()
+before=s.state_fingerprint()
+r.draw()
+assert r.inspector.cached_data.tick==18
+assert r.inspector.cached_data.acquired==tuple(s.world.organisms[1].brain.acquired)
+assert r.inspector.cached_data.activities==tuple(s.world.organisms[1].brain.activities)
+assert s.state_fingerprint()==before
+r.paused=True
+r.run(max_frames=2)
+l.close()
+"""
+    subprocess.run(
+        [sys.executable, "-c", script, str(tmp_path)],
+        env=dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy"),
+        capture_output=True,
+        text=True,
+        check=True,
+    )

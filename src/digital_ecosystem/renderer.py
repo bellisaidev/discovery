@@ -1,6 +1,7 @@
 """Pygame view/controller. Imported only by the graphical CLI path."""
 
 import math
+import sqlite3
 import time
 from collections import deque
 
@@ -8,6 +9,7 @@ import numpy as np
 import pygame
 
 from .brain import OUTPUT_NAMES
+from .inspector import InspectorPanel
 from .sensors import SENSOR_NAMES
 
 
@@ -21,14 +23,20 @@ class Renderer:
         on_load=None,
         on_list=None,
         on_close=None,
+        on_reader=None,
+        on_capture=None,
     ):
         pygame.init()
         self.screen = pygame.display.set_mode((1380, 820), pygame.RESIZABLE)
-        pygame.display.set_caption("Digital Life Lab — V1")
+        pygame.display.set_caption("Digital Life Lab — Neural Inspector")
         self.font = pygame.font.Font(None, 22)
         self.small = pygame.font.Font(None, 18)
         self.title = pygame.font.Font(None, 30)
         self.simulation = simulation
+        self.on_reader, self.on_capture = on_reader, on_capture
+        self.view = "world"
+        self.archive_active = False
+        self.inspector = InspectorPanel()
         self.on_new, self.on_export = on_new, on_export
         self.on_save, self.on_load, self.on_list, self.on_close = (
             on_save,
@@ -94,6 +102,8 @@ class Renderer:
             ("energy", "Energia"),
             ("trails", "Tracce"),
             ("export", "Esporta CSV"),
+            ("world", "Mondo"),
+            ("inspector", "Rete"),
         ]
         self.buttons = {}
         x = 14
@@ -131,6 +141,18 @@ class Renderer:
             self.checkpoint_text or "Percorso .dlcp (Invio per caricare)", 322, 116, small=True
         )
         screen.set_clip(None)
+        if self.view == "inspector":
+            try:
+                self.inspector.draw(
+                    self,
+                    pygame.Rect(
+                        14, 155, screen.get_width() - 28, max(240, screen.get_height() - 170)
+                    ),
+                )
+            except (ValueError, OSError, RuntimeError, sqlite3.Error) as error:
+                self._text(str(error), 20, 280)
+            pygame.display.flip()
+            return
         viewport, scale, panel_x = self._layout()
         pygame.draw.rect(screen, (23, 32, 40), viewport)
         screen.set_clip(viewport)
@@ -274,6 +296,15 @@ class Renderer:
         return True
 
     def _command(self, command):
+        if command.startswith("inspect_"):
+            try:
+                self.inspector.command(command.removeprefix("inspect_"), self)
+            except (OSError, ValueError, RuntimeError, sqlite3.Error) as error:
+                self.message = str(error)
+            return
+        if command in {"world", "inspector"}:
+            self.view = command
+            return
         if command in {"play", "tick"} and self.observation_pending:
             if not self._observe_tick():
                 return
@@ -293,6 +324,7 @@ class Renderer:
                     self.simulation = replacement
                     self.observation_pending = False
                     self.selected = None
+                    self.inspector.reset()
                     self.trails.clear()
                     self.accumulator = 0
                     self.actual_speed = 0
@@ -334,6 +366,7 @@ class Renderer:
                 self.simulation = self.on_new(seed)
                 self.observation_pending = False
                 self.selected = None
+                self.inspector.reset()
                 self.trails.clear()
                 self.accumulator = 0
                 self.message = f"Nuovo esperimento, seed {seed}"
@@ -362,6 +395,8 @@ class Renderer:
             while running:
                 elapsed = min(self.clock.tick(60) / 1000, 0.25)
                 for event in pygame.event.get():
+                    if self.view == "inspector" and self.inspector.event(event, self):
+                        continue
                     if event.type == pygame.QUIT:
                         running = not self._request_close()
                     elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
