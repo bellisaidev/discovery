@@ -18,6 +18,9 @@ class WorldConfig:
     resource_radius: float = 7.0
     resource_capacity: float = 40.0
     resource_regeneration: float = 0.08
+    resource_relocation: bool = False
+    resource_relocation_attempts: int = 100
+    resource_relocation_clearance: float = 0.0
 
 
 @dataclass
@@ -194,6 +197,7 @@ class Configuration:
             "logging.batch_samples": self.logging.batch_samples,
             "logging.diversity_pairs": self.logging.diversity_pairs,
             "reproduction.placement_attempts": r.placement_attempts,
+            "world.resource_relocation_attempts": w.resource_relocation_attempts,
             "neural.parameter_bound": n.parameter_bound,
         }.items():
             if value <= 0:

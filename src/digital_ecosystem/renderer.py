@@ -183,9 +183,12 @@ class Renderer:
             living = {o["id"] for o in snapshot["organisms"]}
             self.trails = {i: points for i, points in self.trails.items() if i in living}
         w, b = self.simulation.config.world, self.simulation.config.body
-        for position, energy in zip(
-            snapshot["resource_positions"], snapshot["resource_energy"], strict=True
+        active_mask = snapshot.get("resource_active")
+        for i, (position, energy) in enumerate(
+            zip(snapshot["resource_positions"], snapshot["resource_energy"], strict=True)
         ):
+            if active_mask is not None and not active_mask[i]:
+                continue
             intensity = energy / w.resource_capacity
             color = (36, int(55 + 130 * intensity), 74)
             pygame.draw.circle(

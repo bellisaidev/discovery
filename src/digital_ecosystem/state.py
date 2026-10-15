@@ -101,6 +101,7 @@ def capture(simulation) -> dict:
         "organisms": organisms,
         "resource_positions": world.resource_positions.copy(),
         "resource_energy": world.resource_energy.copy(),
+        "resource_active": world.resource_active.copy(),
         "ledger": asdict(world.ledger),
         "signals": signals,
         "records": copy.deepcopy(list(simulation.records.items())),
@@ -118,6 +119,12 @@ def capture(simulation) -> dict:
             "rng": copy.deepcopy(simulation.reproduction.placement_rng.bit_generator.state),
             "mutation_seed": simulation.reproduction.mutation_seed.state,
         },
+        "relocation_rng": {
+            "rng_type": type(world.relocation_rng.bit_generator).__name__,
+            "rng": copy.deepcopy(world.relocation_rng.bit_generator.state),
+        }
+        if getattr(world, "relocation_rng", None) is not None
+        else None,
     }
 
 
@@ -146,6 +153,10 @@ def restore(state: dict):
     count = config.world.resource_count
     world.resource_positions = _array(state["resource_positions"], (count, 2))
     world.resource_energy = _array(state["resource_energy"], (count,))
+    if "resource_active" in state:
+        world.resource_active = _array(state["resource_active"], (count,), dtype=bool)
+    else:
+        world.resource_active = np.ones(count, dtype=bool)
     if np.any(world.resource_energy < 0) or np.any(
         world.resource_energy > config.world.resource_capacity
     ):
@@ -210,7 +221,7 @@ def restore(state: dict):
         raise ValueError("Population exceeds configured capacity")
     cell_size = max(2 * config.body.radius, config.sensors.range)
     world.body_index, world.resource_index = SpatialIndex(cell_size), SpatialIndex(cell_size)
-    world.resource_index.rebuild(list(enumerate(world.resource_positions)))
+    world.rebuild_resource_index()
     world.rebuild_body_index()
     simulation.world, simulation.physics = world, Physics(world)
     simulation.physics.contacts = state["physics_contacts"]
@@ -295,6 +306,18 @@ def restore(state: dict):
         np.random.SeedSequence(**reproduction["mutation_seed"]),
     )
     simulation.reproduction.next_id = reproduction["next_id"]
+    if state.get("relocation_rng") is not None:
+        reloc = state["relocation_rng"]
+        if reloc["rng_type"] != "PCG64":
+            raise ValueError("Unsupported generator")
+        reloc_bg = np.random.PCG64(0)
+        reloc_bg.state = reloc["rng"]
+        world.relocation_rng = np.random.Generator(reloc_bg)
+    else:
+        relocation_seed = np.random.SeedSequence(state["seed"], spawn_key=(5,))
+        world.relocation_rng = np.random.default_rng(relocation_seed)
+    world_seed = np.random.SeedSequence(state["seed"]).spawn(5)[0]
+    world.rng = np.random.default_rng(world_seed)
     simulation.records = {i: record for i, record in copy.deepcopy(state["records"])}
     for name, value in state["counters"].items():
         setattr(simulation, name, value)

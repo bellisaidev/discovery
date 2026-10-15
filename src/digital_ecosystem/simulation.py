@@ -26,7 +26,12 @@ class Simulation:
         world_seed, body_seed, gene_seed, placement_seed, mutation_seed = np.random.SeedSequence(
             seed
         ).spawn(5)
-        self.world = World(self.config, np.random.default_rng(world_seed))
+        relocation_seed = np.random.SeedSequence(seed, spawn_key=(5,))
+        self.world = World(
+            self.config,
+            np.random.default_rng(world_seed),
+            np.random.default_rng(relocation_seed),
+        )
         body_rng, gene_rng = np.random.default_rng(body_seed), np.random.default_rng(gene_seed)
         base = Genome.initial(self.config.neural, gene_rng)
         b, w = self.config.body, self.config.world
@@ -173,7 +178,9 @@ class Simulation:
             elif blocked:
                 self._event({"tick": self.tick, "kind": blocked, "organism_id": organism.id})
                 self.population_limit_hits += blocked == "population_limit"
-        self.world.regenerate()
+        resource_events = self.world.regenerate()
+        for rev in resource_events:
+            self._event(dict(rev, tick=self.tick))
         if self.signals is not None:
             self.signals.advance(emissions)
         self.world.rebuild_body_index()
@@ -220,6 +227,7 @@ class Simulation:
             "organisms": organisms,
             "resource_positions": self.world.resource_positions.copy(),
             "resource_energy": self.world.resource_energy.copy(),
+            "resource_active": self.world.resource_active.copy(),
             "signals": None if self.signals is None else self.signals.field.copy(),
             "ledger": asdict(self.world.ledger),
             "energy_error": self.world.energy_balance_error(),

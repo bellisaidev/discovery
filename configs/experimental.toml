@@ -9,6 +9,9 @@ resource_count = 140
 resource_radius = 7.0
 resource_capacity = 40.0
 resource_regeneration = 0.58
+resource_relocation = false
+resource_relocation_attempts = 100
+resource_relocation_clearance = 0.0
 
 [body]
 radius = 6.0

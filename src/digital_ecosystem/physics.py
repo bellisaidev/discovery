@@ -133,7 +133,8 @@ class Physics:
             touching = [
                 i
                 for i in nearby
-                if np.linalg.norm(o.position - world.resource_positions[i])
+                if world.resource_active[i]
+                and np.linalg.norm(o.position - world.resource_positions[i])
                 <= o.radius + world.config.world.resource_radius
             ]
             if not touching:

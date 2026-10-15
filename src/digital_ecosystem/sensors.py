@@ -37,7 +37,9 @@ class Sensors:
         result = np.zeros(16)
         result[0] = organism.energy / world.config.body.energy_capacity
         directions = organism.orientation + SECTOR_OFFSETS
-        resources = world.nearby_resources(organism.position, radius)
+        resources = [
+            i for i in world.nearby_resources(organism.position, radius) if world.resource_active[i]
+        ]
         if resources:
             delta = world.resource_positions[resources] - organism.position
             distances = np.linalg.norm(delta, axis=1)
