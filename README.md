@@ -7,6 +7,19 @@ azioni. Le statistiche non controllano gli organismi.
 
 ![Interfaccia con ispezione di un organismo](docs/gui.png)
 
+## Project Governance & Documentation
+
+La documentazione descrittiva condivisa per collaboratori e agenti comprende:
+
+- [PROJECT_VISION](docs/PROJECT_VISION.md): direzione attuale, ipotesi e convenzioni rivedibili.
+- [ROADMAP](docs/ROADMAP.md): stato verificabile, distinzione fra branch e workflow condiviso.
+- [DECISIONS](docs/DECISIONS.md): storia contestualizzata delle scelte, provenienza e proposte.
+
+I documenti aiutano a comprendere il codice del branch corrente. Le nuove istruzioni
+esplicite dell'utente possono modificare direzione, obiettivi e architettura senza
+approvazioni aggiuntive dovute a decisioni storiche. Gli agenti segnalano rischi e
+rotture tecniche, preservando integrità e provenienza dei dati sperimentali.
+
 ## Installazione
 
 Richiede Python **3.12**, gestito da uv. Non servono GPU, account o servizi esterni.
@@ -343,8 +356,8 @@ massimo computazionale non implica funzionamento in tempo reale. A popolazioni e
 la velocità può scendere sotto 1×. Le misure di memoria distinguono buffer NumPy e
 allocazioni tracciate; non rappresentano la memoria RSS totale del processo.
 
-I test comprendono almeno tre seed e tutte le otto combinazioni di controllo. Un esito
-di estinzione o l'assenza di emergenza non giustificano aggiustamenti automatici. La V1
+I test comprendono almeno tre seed e tutte le otto combinazioni di controllo. Nel modello
+attuale, estinzione e assenza di emergenza non attivano aggiustamenti automatici. La V1
 fornisce osservazioni e confronti descrittivi, non dimostrazioni di intelligenza o
 comunicazione significativa.
 
